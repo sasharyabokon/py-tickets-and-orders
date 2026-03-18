@@ -61,7 +61,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        return f"<Order: {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}>"
 
     class Meta:
         ordering = ["-created_at"]
@@ -75,9 +75,9 @@ class Ticket(models.Model):
 
     def __str__(self):
         return (
-            f"{self.movie_session.movie.title} "
+            f"<Ticket: {self.movie_session.movie.title} "
             f"{self.movie_session.show_time.strftime('%Y-%m-%d %H:%M:%S')} "
-            f"(row: {self.row}, seat: {self.seat})"
+            f"(row: {self.row}, seat: {self.seat})>"
         )
 
     def clean(self):
@@ -85,12 +85,12 @@ class Ticket(models.Model):
         hall = self.movie_session.cinema_hall
 
         if self.row < 1 or self.row > hall.rows:
-            errors["row"] = [f"row number must be in available"
-                             f" range: (1, rows): (1, {hall.rows})"]
+            errors["row"] = [f"row number must be in available "
+                             f"range: (1, rows): (1, {hall.rows})"]
 
         if self.seat < 1 or self.seat > hall.seats_in_row:
-            errors["seat"] = [f"seat number must be in available range:"
-                              f" (1, seats_in_row): (1, {hall.seats_in_row})"]
+            errors["seat"] = [f"seat number must be in available range: "
+                              f"(1, seats_in_row): (1, {hall.seats_in_row})"]
 
         if Ticket.objects.filter(
             movie_session=self.movie_session,
