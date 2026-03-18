@@ -1,10 +1,8 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser, User
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.constraints import UniqueConstraint
-
-from settings import AUTH_USER_MODEL
+from django.utils import timezone
 
 
 class Genre(models.Model):
@@ -59,27 +57,28 @@ class MovieSession(models.Model):
 
 
 class Order(models.Model):
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="orders", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return str(self.created_at)
+        return self.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
     class Meta:
         ordering = ["-created_at"]
 
 
-
 class Ticket(models.Model):
-    order = models.ForeignKey("Order", on_delete=models.CASCADE)
+    order = models.ForeignKey("Order", related_name="tickets", on_delete=models.CASCADE)
     movie_session = models.ForeignKey("MovieSession", on_delete=models.CASCADE)
     row = models.IntegerField()
     seat = models.IntegerField()
 
     def __str__(self):
-        return (f"{self.movie_session.movie.title}"
-                f" {self.movie_session.show_time}"
-                f" (row: {self.row}, seat: {self.seat})")
+        return (
+            f"{self.movie_session.movie.title} "
+            f"{self.movie_session.show_time.strftime('%Y-%m-%d %H:%M:%S')} "
+            f"(row: {self.row}, seat: {self.seat})"
+        )
 
     def clean(self):
         errors = {}
